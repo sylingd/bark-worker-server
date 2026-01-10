@@ -1,7 +1,7 @@
 export interface BasicKV {
-  get: <T = any>(key: string) => Promise<T | null>;
-  set: (key: string, value: any) => Promise<void>;
-  delete: (key: string) => Promise<void>;
+  get(key: string, options?: { type: 'json' | 'text' }): Promise<any>;
+  put(key: string, value: string): Promise<void>;
+  delete(key: string): Promise<void>;
 }
 
 export class Database {
@@ -13,14 +13,14 @@ export class Database {
 
   async getDevices() {
     if (!this.devices) {
-      this.devices = (await this.base.get('devices')) || {};
+      this.devices = (await this.base.get('devices', { type: 'json' })) || {};
     }
-    return this.devices;
+    return this.devices!;
   }
 
   async saveDevices(devices: Record<string, string>) {
     this.devices = devices;
-    return await this.base.set('devices', this.devices);
+    return await this.base.put('devices', JSON.stringify(this.devices));
   }
 
   async countAll() {
@@ -52,7 +52,7 @@ export class Database {
 
   async saveAuthorizationToken(token: string) {
     const expireAt = Date.now() + 3000000; // 有效期是一小时，向下取一点
-    await this.base.set('authToken', { token, expireAt });
+    await this.base.put('authToken', JSON.stringify({ token, expireAt }));
     return token;
   }
 
