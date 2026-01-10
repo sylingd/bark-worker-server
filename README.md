@@ -23,6 +23,8 @@ Bark Worker Server 是一个 [Bark-Server](https://github.com/Finb/bark-server) 
 
 ### Cloudflare Worker
 
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fsylingd%2Fbark-worker-server)
+
 * 待编写
 
 ## 已知问题
