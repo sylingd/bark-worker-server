@@ -5,16 +5,9 @@ import { createHono } from '../core/hono';
 import type { BasicEnv } from '../core/type';
 
 interface EOEventContext {
-  uuid: string;
   params: any;
   request: Request;
-  env: Record<string, unknown>;
-  clientIp: string;
-  server: {
-    region: string;
-    requestId: string;
-  };
-  geo: any;
+  env: BasicEnv;
 }
 
 // @see https://edgeone.cloud.tencent.com/pages/document/162936897742577664
@@ -46,12 +39,7 @@ class WrapEdgeOneKV implements BasicKV {
 }
 
 interface EOHonoEnv extends Env {
-  Bindings: {
-    env: BasicEnv;
-    clientIp: EOEventContext['clientIp'];
-    server: EOEventContext['server'];
-    geo: EOEventContext['geo'];
-  };
+  Bindings: BasicEnv;
 }
 
 let hono: Hono<EOHonoEnv>;
@@ -59,21 +47,20 @@ let hono: Hono<EOHonoEnv>;
 export const onRequest = (ctx: EOEventContext) => {
   if (!hono) {
     hono = createHono<EOHonoEnv>({
+      basePath: ctx.env.ROOT_PATH || '/',
       createAPI: async (c) => {
-        return new API(new Database(new WrapEdgeOneKV(c.env.env.DB_NAME)), {
-          allowNewDevice: c.env.env.ALLOW_NEW_DEVICE !== 'false',
-          allowQueryNums: c.env.env.ALLOW_QUERY_NUMS !== 'false',
-        });
+        return new API(
+          new Database(new WrapEdgeOneKV(c.env.DB_NAME || 'bark')),
+          {
+            allowNewDevice: c.env.ALLOW_NEW_DEVICE !== 'false',
+            allowQueryNums: c.env.ALLOW_QUERY_NUMS !== 'false',
+          },
+        );
       },
       getBasicAuth(c) {
-        return c.env.env.BASIC_AUTH;
+        return c.env.BASIC_AUTH;
       },
     });
   }
-  return hono.fetch(ctx.request, {
-    env: ctx.env,
-    clientIp: ctx.clientIp,
-    server: ctx.server,
-    geo: ctx.geo,
-  });
+  return hono.fetch(ctx.request, ctx.env);
 };

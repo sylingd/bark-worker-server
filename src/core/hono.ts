@@ -80,6 +80,7 @@ const registerV1 = async (app: Hono, getAPI: () => API) => {
 };
 
 export interface BaseAdapter<T extends Env> {
+  basePath: string;
   createAPI: (c: Context<T>) => Promise<API>;
   getBasicAuth: (c: Context<T>) => string | undefined;
 }
@@ -90,6 +91,8 @@ export const createHono = <T extends Env>(adapter: BaseAdapter<T>) => {
   const getAPI = () => api;
 
   const app = new Hono<T>();
+
+  app.basePath(adapter.basePath);
 
   app.use(async (c, next) => {
     api = await adapter.createAPI(c);
@@ -146,7 +149,7 @@ export const createHono = <T extends Env>(adapter: BaseAdapter<T>) => {
   });
 
   // compat old API
-  registerV1(app, getAPI);
+  registerV1(app as unknown as Hono, getAPI);
 
   app.onError((err) => {
     if (err instanceof APIError) {

@@ -36,15 +36,18 @@ interface CFHonoEnv extends Env {
 let hono: Hono<CFHonoEnv>;
 
 export default {
-  fetch(request: any, env: any, ctx: any) {
+  fetch(request: Request, env: BasicEnv, ctx: any) {
     if (!hono) {
       hono = createHono({
+        basePath: env.ROOT_PATH || '/',
         createAPI: async (c) => {
           return new API(
-            new Database(new CloudflareKV((c.env as any)[c.env.DB_NAME])),
+            new Database(
+              new CloudflareKV((c.env as any)[c.env.DB_NAME || 'bark']),
+            ),
             {
               allowNewDevice: c.env.ALLOW_NEW_DEVICE !== 'false',
-              allowQueryNums: c.env.ALLOW_NEW_DEVICE !== 'false',
+              allowQueryNums: c.env.ALLOW_QUERY_NUMS !== 'false',
             },
           );
         },

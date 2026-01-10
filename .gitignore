@@ -15,4 +15,4 @@ dist/
 !.vscode/extensions.json
 .idea
 
-deploy/**/handler.js
+.edgeone

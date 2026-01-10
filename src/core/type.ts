@@ -3,4 +3,5 @@ export interface BasicEnv {
   ALLOW_NEW_DEVICE: string;
   ALLOW_QUERY_NUMS: string;
   BASIC_AUTH: string;
+  ROOT_PATH: string;
 }

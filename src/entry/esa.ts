@@ -42,11 +42,15 @@ export default {
   fetch(request: any) {
     if (!hono) {
       hono = createHono<ESAHonoEnv>({
+        basePath: process.env.ROOT_PATH || '/',
         createAPI: async () => {
-          return new API(new Database(new ESAKV(process.env.DB_NAME!)), {
-            allowNewDevice: process.env.ALLOW_NEW_DEVICE !== 'false',
-            allowQueryNums: process.env.ALLOW_NEW_DEVICE !== 'false',
-          });
+          return new API(
+            new Database(new ESAKV(process.env.DB_NAME || 'bark')),
+            {
+              allowNewDevice: process.env.ALLOW_NEW_DEVICE !== 'false',
+              allowQueryNums: process.env.ALLOW_QUERY_NUMS !== 'false',
+            },
+          );
         },
         getBasicAuth() {
           return process.env.BASIC_AUTH;
