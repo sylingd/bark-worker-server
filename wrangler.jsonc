@@ -7,5 +7,5 @@
   "main": "./dist/handler.js",
   "observability": {
     "enabled": true
-  }
+  },"name": "bark-worker-server"
 }
