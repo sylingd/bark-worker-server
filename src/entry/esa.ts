@@ -1,4 +1,3 @@
-import { env } from 'node:process';
 import type { Env, Hono } from 'hono';
 import { API } from '../core/api';
 import { type BasicKV, Database } from '../core/db';
@@ -19,8 +18,17 @@ interface ESAHonoEnv extends Env {
 
 let hono: Hono<ESAHonoEnv>;
 
+// inject in build
+const env = {
+  DB_NAME: process.env.DB_NAME || 'bark',
+  ALLOW_NEW_DEVICE: process.env.ALLOW_NEW_DEVICE || 'true',
+  ALLOW_QUERY_NUMS: process.env.ALLOW_QUERY_NUMS || 'true',
+  BASIC_AUTH: process.env.BASIC_AUTH || '',
+  ROOT_PATH: process.env.ROOT_PATH || '/',
+};
+
 export default {
-  fetch(request: any) {
+  fetch(request: Request) {
     if (!hono) {
       hono = createHono<ESAHonoEnv>({
         basePath: env.ROOT_PATH || '/',

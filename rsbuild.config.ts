@@ -2,6 +2,22 @@ import path from 'node:path';
 import { defineConfig } from '@rsbuild/core';
 import fs from 'fs-extra';
 
+const defines: any = {
+  'process.env.ENTRY': JSON.stringify(process.env.ENTRY),
+};
+
+if (process.env.ENTRY === 'esa') {
+  defines['process.env.ROOT_PATH'] = JSON.stringify(process.env.ROOT_PATH);
+  defines['process.env.DB_NAME'] = JSON.stringify(process.env.DB_NAME);
+  defines['process.env.ALLOW_NEW_DEVICE'] = JSON.stringify(
+    process.env.ALLOW_NEW_DEVICE,
+  );
+  defines['process.env.ALLOW_QUERY_NUMS'] = JSON.stringify(
+    process.env.ALLOW_QUERY_NUMS,
+  );
+  defines['process.env.BASIC_AUTH'] = JSON.stringify(process.env.BASIC_AUTH);
+}
+
 // Docs: https://rsbuild.rs/config/
 export default defineConfig({
   output: {
@@ -32,6 +48,7 @@ export default defineConfig({
         html: false,
       },
     },
+    define: defines,
   },
   tools: {
     rspack: {
@@ -41,7 +58,6 @@ export default defineConfig({
         library: {
           type: 'module',
         },
-        // pathinfo: true,
       },
       experiments: {
         outputModule: true,
