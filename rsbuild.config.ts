@@ -18,6 +18,7 @@ export default defineConfig({
     polyfill: 'off',
     sourceMap: false,
     minify: false,
+    externals: ['node:process'],
   },
   performance: {
     chunkSplit: {

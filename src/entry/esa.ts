@@ -1,3 +1,4 @@
+import { env } from 'node:process';
 import type { Env, Hono } from 'hono';
 import { API } from '../core/api';
 import { type BasicKV, Database } from '../core/db';
@@ -42,21 +43,18 @@ export default {
   fetch(request: any) {
     if (!hono) {
       hono = createHono<ESAHonoEnv>({
-        basePath: process.env.ROOT_PATH || '/',
+        basePath: env.ROOT_PATH || '/',
         createAPI: async () => {
-          return new API(
-            new Database(new ESAKV(process.env.DB_NAME || 'bark')),
-            {
-              allowNewDevice: process.env.ALLOW_NEW_DEVICE !== 'false',
-              allowQueryNums: process.env.ALLOW_QUERY_NUMS !== 'false',
-            },
-          );
+          return new API(new Database(new ESAKV(env.DB_NAME || 'bark')), {
+            allowNewDevice: env.ALLOW_NEW_DEVICE !== 'false',
+            allowQueryNums: env.ALLOW_QUERY_NUMS !== 'false',
+          });
         },
         getBasicAuth() {
-          return process.env.BASIC_AUTH;
+          return env.BASIC_AUTH;
         },
       });
     }
-    return hono.fetch(request);
+    return hono.fetch(request, env);
   },
 };
