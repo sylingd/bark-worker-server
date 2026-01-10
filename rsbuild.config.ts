@@ -5,7 +5,7 @@ import fs from 'fs-extra';
 // Docs: https://rsbuild.rs/config/
 export default defineConfig({
   output: {
-    target: 'web',
+    target: process.env.ENTRY === 'node' ? 'node' : 'web',
     module: true,
     distPath: {
       root: 'dist',
@@ -35,7 +35,7 @@ export default defineConfig({
   },
   tools: {
     rspack: {
-      target: 'es2020',
+      target: process.env.ENTRY === 'node' ? 'node' : 'es2020',
       output: {
         asyncChunks: false,
         library: {

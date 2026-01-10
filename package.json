@@ -5,17 +5,17 @@
   "type": "module",
   "scripts": {
     "check": "biome check --write",
-    "dev": "rsbuild dev --open",
     "format": "biome format --write",
-    "preview": "rsbuild preview",
     "test": "rstest",
     "test:watch": "rstest --watch",
+    "build:node": "cross-env ENTRY=node rsbuild build",
     "build:cf": "cross-env ENTRY=cloudflare rsbuild build",
     "build:eo": "cross-env ENTRY=edgeone rsbuild build",
     "build:esa": "cross-env ENTRY=esa rsbuild build"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.8",
+    "@hono/node-server": "^1.19.8",
     "@rsbuild/core": "^1.7.1",
     "@rstest/core": "^0.7.8",
     "@testing-library/dom": "^10.4.1",

@@ -92,24 +92,24 @@ export const createHono = <T extends Env>(adapter: BaseAdapter<T>) => {
 
   const app = new Hono<T>();
 
-  app.basePath(adapter.basePath);
+  const router = app.basePath(adapter.basePath);
 
-  app.use(async (c, next) => {
+  router.use(async (c, next) => {
     api = await adapter.createAPI(c);
     await next();
   });
 
-  app.all('/register', async (c) => {
+  router.all('/register', async (c) => {
     return c.json(
       await api.register(c.req.query('devicetoken'), c.req.query('key')),
     );
   });
 
-  app.all('/ping', async (c) => {
+  router.all('/ping', async (c) => {
     return c.json(await api.ping());
   });
 
-  app.all(
+  router.all(
     '/healthz',
     () =>
       new Response('ok', {
@@ -120,7 +120,7 @@ export const createHono = <T extends Env>(adapter: BaseAdapter<T>) => {
       }),
   );
 
-  app.all('/info', async (c) => {
+  router.all('/info', async (c) => {
     if (
       !validateBasicAuth(c.req.header('Authorization'), adapter.getBasicAuth(c))
     ) {
@@ -136,7 +136,7 @@ export const createHono = <T extends Env>(adapter: BaseAdapter<T>) => {
   });
 
   // batch push
-  app.post('/push', async (c) => {
+  router.post('/push', async (c) => {
     // is API v2?
     const isAPIv2 = c.req
       .header('Content-Type')
@@ -149,9 +149,9 @@ export const createHono = <T extends Env>(adapter: BaseAdapter<T>) => {
   });
 
   // compat v1 API
-  registerV1(app as unknown as Hono, getAPI);
+  registerV1(router as unknown as Hono, getAPI);
 
-  app.all(
+  router.all(
     '/',
     () =>
       new Response('ok', {
