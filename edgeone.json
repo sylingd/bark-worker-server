@@ -1,0 +1,6 @@
+{
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "npm run build:eo",
+  "outputDirectory": "dist",
+  "nodeVersion": "22.11.0"
+}

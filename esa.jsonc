@@ -1,0 +1,8 @@
+{
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "npm run build:esa",
+  "assets": {
+    "directory": "./public"
+  },
+  "entry": "./dist/handler.js"
+}
