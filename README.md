@@ -8,19 +8,19 @@ Bark Worker Server 是一个 [Bark-Server](https://github.com/Finb/bark-server) 
 
 ### 阿里云 ESA
 
-[部署教程](https://github.com/sylingd/bark-worker-server/discussions/3)
+[部署教程](https://github.com/sylingd/bark-worker-server/wiki/%E9%98%BF%E9%87%8C%E4%BA%91-ESA-%E9%83%A8%E7%BD%B2)
 
 ### EdgeOne
 
 **经测试，EdgeOne 边缘函数无法连接 Apple Push 服务器**
 
-[部署教程](https://github.com/sylingd/bark-worker-server/discussions/2)
+[部署教程](https://github.com/sylingd/bark-worker-server/wiki/EdgeOne-%E9%83%A8%E7%BD%B2)
 
 ### Cloudflare Worker
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fsylingd%2Fbark-worker-server)
 
-[部署教程](https://github.com/sylingd/bark-worker-server/discussions/4)
+[部署教程](https://github.com/sylingd/bark-worker-server/wiki/Cloudflare-Workers-%E9%83%A8%E7%BD%B2)
 
 ## 已知问题
 
