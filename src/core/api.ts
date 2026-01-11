@@ -24,6 +24,7 @@ const buildSuccess = (data: any, message = 'success') => ({
 export interface Options {
   allowNewDevice: boolean;
   allowQueryNums: boolean;
+  maxBatchPushCount: number;
 }
 
 export type PushParameters = Partial<{
@@ -119,13 +120,55 @@ export class API {
   }
 
   async push(parameters: PushParameters) {
-    // TODO: support device_keys
+    // batch
+    if (
+      Array.isArray(parameters.device_keys) &&
+      parameters.device_keys.length > 0
+    ) {
+      if (
+        !Number.isNaN(this.options.maxBatchPushCount) &&
+        this.options.maxBatchPushCount > 0
+      ) {
+        if (parameters.device_keys.length > this.options.maxBatchPushCount) {
+          throw new APIError(
+            400,
+            `batch push count exceeds the maximum limit: ${this.options.maxBatchPushCount}`,
+          );
+        }
+      }
+
+      return buildSuccess({
+        data: await Promise.all(
+          parameters.device_keys.map(async (deviceKey) => {
+            try {
+              const res = await this.pushOne(deviceKey, parameters);
+              return {
+                code: res.code,
+                device_key: deviceKey,
+              };
+            } catch (e) {
+              if (e instanceof Error) {
+                return {
+                  code: e instanceof APIError ? e.code : 500,
+                  device_key: deviceKey,
+                  message: e.message,
+                };
+              }
+            }
+          }),
+        ),
+      });
+    }
+
     const deviceKey = parameters.device_key;
     if (!deviceKey) {
       throw new APIError(400, 'device key is empty');
     }
-    const deviceToken = await this.db.deviceTokenByKey(deviceKey);
+    return this.pushOne(deviceKey, parameters);
+  }
 
+  private async pushOne(deviceKey: string, parameters: PushParameters) {
+    const deviceToken = await this.db.deviceTokenByKey(deviceKey);
     if (deviceToken === undefined) {
       throw new APIError(
         400,
@@ -136,7 +179,6 @@ export class API {
     if (!deviceToken) {
       throw new APIError(400, 'device token invalid');
     }
-
     if (deviceToken.length > 128) {
       await this.db.deleteDeviceByKey(deviceKey);
       throw new APIError(400, 'invalid device token, has been removed');
@@ -155,27 +197,9 @@ export class API {
       sound = '1107';
     }
 
-    const group = parameters.group || undefined;
-    const call = parameters.call || undefined;
-    const isArchive = parameters.isArchive || undefined;
-    const icon = parameters.icon || undefined;
-    const ciphertext = parameters.ciphertext || undefined;
-    const level = parameters.level || undefined;
-    const volume = parameters.volume || undefined;
-    const url = parameters.url || undefined;
-    const image = parameters.image || undefined;
-    const copy = parameters.copy || undefined;
-    const badge = parameters.badge || undefined;
-    const autoCopy = parameters.autoCopy || undefined;
-    const action = parameters.action || undefined;
-    const iv = parameters.iv || undefined;
-    const id = parameters.id || undefined;
-    const _delete = parameters.delete || undefined;
-    const markdown = parameters.markdown || undefined;
-
     // https://developer.apple.com/documentation/usernotifications/generating-a-remote-notification
     const aps = {
-      aps: _delete
+      aps: parameters.delete
         ? {
             'content-available': 1,
             'mutable-content': 1,
@@ -195,7 +219,7 @@ export class API {
             },
             badge: undefined,
             sound: sound,
-            'thread-id': group,
+            'thread-id': parameters.group,
             category: 'myNotificationCategory',
             'content-available': undefined,
             'mutable-content': 1,
@@ -212,30 +236,30 @@ export class API {
             attributes: undefined,
           },
       // ExtParams
-      group: group,
-      call: call,
-      isarchive: isArchive,
-      icon: icon,
-      ciphertext: ciphertext,
-      level: level,
-      volume: volume,
-      url: url,
-      copy: copy,
-      badge: badge,
-      autocopy: autoCopy,
-      action: action,
-      iv: iv,
-      image: image,
-      id: id,
-      delete: _delete,
-      markdown: markdown,
+      group: parameters.group,
+      call: parameters.call,
+      isarchive: parameters.isArchive,
+      icon: parameters.icon,
+      ciphertext: parameters.ciphertext,
+      level: parameters.level,
+      volume: parameters.volume,
+      url: parameters.url,
+      copy: parameters.copy,
+      badge: parameters.badge,
+      autocopy: parameters.autoCopy,
+      action: parameters.action,
+      iv: parameters.iv,
+      image: parameters.image,
+      id: parameters.id,
+      delete: parameters.delete,
+      markdown: parameters.markdown,
     };
 
     const headers: Record<string, string> = {
-      'apns-push-type': _delete ? 'background' : 'alert',
+      'apns-push-type': parameters.delete ? 'background' : 'alert',
     };
-    if (id) {
-      headers['apns-collapse-id'] = id;
+    if (parameters.id) {
+      headers['apns-collapse-id'] = parameters.id;
     }
 
     const response = await push(this.db, deviceToken, headers, aps);

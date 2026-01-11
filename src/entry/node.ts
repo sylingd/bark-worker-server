@@ -34,11 +34,10 @@ const hono: Hono<ESAHonoEnv> = createHono<ESAHonoEnv>({
     return new API(new Database(new NodeKV()), {
       allowNewDevice: process.env.ALLOW_NEW_DEVICE !== 'false',
       allowQueryNums: process.env.ALLOW_QUERY_NUMS !== 'false',
+      maxBatchPushCount: Number(process.env.MAX_BATCH_PUSH_COUNT),
     });
   },
-  getBasicAuth() {
-    return process.env.BASIC_AUTH;
-  },
+  getBasicAuth: () => process.env.BASIC_AUTH,
 });
 
 serve(hono, (info) => {

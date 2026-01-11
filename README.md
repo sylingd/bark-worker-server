@@ -29,10 +29,18 @@ Bark Worker Server 是一个 [Bark-Server](https://github.com/Finb/bark-server) 
 
 ## 已知问题
 
-* 暂不支持批量推送。
-* 因 KV 写入延迟，可能导致以下问题：
-  * 设备注册后，过一小段时间（几秒钟）才能开始推送。
-  * 重置或还原 Key，或短时间有大量新设备注册时，有概率会丢失注册数据，重新操作可解决。
+* 因平台限制，批量推送功能存在最大上限。例如 Cloudflare Workers 每次最多推送 32 个设备。
+* 因 KV 写入延迟，设备注册后，过一小段时间（几秒钟）才能开始推送。
+* 设备计数并不准确，仅供测试数据库使用，请勿依赖此数据。
+
+## 配置项
+
+* `DB_NAME` KV 数据库名称。默认在 Cloudflare Workers 下为 `BARK_KV`，EdgeOne 和 ESA 下为 `bark`
+* `ALLOW_NEW_DEVICE` 是否允许新设备注册，默认为 `true`
+* `ALLOW_QUERY_NUMS` 是否允许查询设备数量，默认为 `true`
+* `MAX_BATCH_PUSH_COUNT` 批量推送最大数量，默认不限制
+* `BASIC_AUTH` 是否启用 HTTP Basic Auth，默认不启用
+* `ROOT_PATH` 部署路径，默认为 `/`
 
 ## 其他
 

@@ -25,6 +25,7 @@ const env = {
   ALLOW_QUERY_NUMS: process.env.ALLOW_QUERY_NUMS || 'true',
   BASIC_AUTH: process.env.BASIC_AUTH || '',
   ROOT_PATH: process.env.ROOT_PATH || '/',
+  MAX_BATCH_PUSH_COUNT: process.env.MAX_BATCH_PUSH_COUNT,
 };
 
 export default {
@@ -38,12 +39,11 @@ export default {
             {
               allowNewDevice: env.ALLOW_NEW_DEVICE !== 'false',
               allowQueryNums: env.ALLOW_QUERY_NUMS !== 'false',
+              maxBatchPushCount: Number(env.MAX_BATCH_PUSH_COUNT),
             },
           );
         },
-        getBasicAuth() {
-          return env.BASIC_AUTH;
-        },
+        getBasicAuth: () => env.BASIC_AUTH,
       });
     }
     return hono.fetch(request, env);

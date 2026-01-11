@@ -5,61 +5,55 @@ export interface BasicKV {
 }
 
 export class Database {
-  base: BasicKV;
-  devices?: Record<string, string>;
-  constructor(base: BasicKV) {
-    this.base = base;
-  }
-
-  async getDevices() {
-    if (!this.devices) {
-      this.devices = (await this.base.get('devices', { type: 'json' })) || {};
-    }
-    return this.devices!;
-  }
-
-  async saveDevices(devices: Record<string, string>) {
-    this.devices = devices;
-    return await this.base.put('devices', JSON.stringify(this.devices));
+  kv: BasicKV;
+  constructor(kv: BasicKV) {
+    this.kv = kv;
   }
 
   async countAll() {
-    const list = await this.getDevices();
-    return Object.keys(list).length;
+    const c = Number(await this.kv.get('deviceCount'));
+    return Number.isNaN(c) ? 0 : c;
+  }
+  async updateCount(diff: number) {
+    const count = await this.countAll();
+    await this.kv.put('deviceCount', String(count + diff));
   }
 
   async deviceTokenByKey(key: string) {
     const deviceKey =
       (key || '').replace(/[^a-zA-Z0-9]/g, '') || '_PLACE_HOLDER_';
-    const devices = await this.getDevices();
-    return devices[deviceKey];
+    const devices = await this.kv.get(`device_${deviceKey}`, { type: 'text' });
+    return devices;
   }
 
   async saveDeviceTokenByKey(key: string, token: string) {
     const deviceToken = (token || '').replace(/[^a-z0-9]/g, '') || '';
-    const devices = await this.getDevices();
-    devices[key] = deviceToken;
-    return this.saveDevices(devices);
+    const k = `device_${key}`;
+    // updateCount
+    this.kv.get(k).then((value) => {
+      if (value) {
+        this.updateCount(1);
+      }
+    });
+    return this.kv.put(k, deviceToken);
   }
 
   async deleteDeviceByKey(key: string) {
     const deviceKey =
       (key || '').replace(/[^a-zA-Z0-9]/g, '') || '_PLACE_HOLDER_';
-    const devices = await this.getDevices();
-    delete devices[deviceKey];
-    return this.saveDevices(devices);
+    this.updateCount(-1);
+    return this.kv.delete(`device_${deviceKey}`);
   }
 
   async saveAuthorizationToken(token: string) {
     const expireAt = Date.now() + 3000000; // 有效期是一小时，向下取一点
-    await this.base.put('authToken', JSON.stringify({ token, expireAt }));
+    await this.kv.put('authToken', JSON.stringify({ token, expireAt }));
     return token;
   }
 
   async getAuthorizationToken() {
-    const res = await this.base.get('authToken');
+    const res = await this.kv.get('authToken');
     if (!res || res.expireAt > Date.now()) {
-      this.base.delete('authToken');
       return undefined;
     }
     return res.token;

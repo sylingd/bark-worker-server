@@ -26,12 +26,11 @@ export const onRequest = (ctx: EOEventContext) => {
           {
             allowNewDevice: c.env.ALLOW_NEW_DEVICE !== 'false',
             allowQueryNums: c.env.ALLOW_QUERY_NUMS !== 'false',
+            maxBatchPushCount: Number(c.env.MAX_BATCH_PUSH_COUNT),
           },
         );
       },
-      getBasicAuth(c) {
-        return c.env.BASIC_AUTH;
-      },
+      getBasicAuth: (c) => c.env.BASIC_AUTH,
     });
   }
   return hono.fetch(ctx.request, ctx.env);

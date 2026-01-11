@@ -8,6 +8,9 @@ const defines: any = {
 
 if (process.env.ENTRY === 'esa') {
   defines['process.env.ROOT_PATH'] = JSON.stringify(process.env.ROOT_PATH);
+  defines['process.env.MAX_BATCH_PUSH_COUNT'] = JSON.stringify(
+    process.env.MAX_BATCH_PUSH_COUNT,
+  );
   defines['process.env.DB_NAME'] = JSON.stringify(process.env.DB_NAME);
   defines['process.env.ALLOW_NEW_DEVICE'] = JSON.stringify(
     process.env.ALLOW_NEW_DEVICE,
