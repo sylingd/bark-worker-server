@@ -4,28 +4,23 @@
 
 Bark Worker Server 是一个 [Bark-Server](https://github.com/Finb/bark-server) 在 各边缘函数环境上的实现。
 
-支持以下环境：
-* Cloudflare Workers
-* EdgeOne Edge Functions
-* 阿里云 ESA
-
 ## 安装使用
 
 ### EdgeOne
 
-* 待编写
+[![使用 EdgeOne Pages 部署](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://console.cloud.tencent.com/edgeone/pages/new?repository-url=https%3A%2F%2Fgithub.com%2Fsylingd%2Fbark-worker-server&env=DB_NAME,ALLOW_NEW_DEVICE,ALLOW_QUERY_NUMS)
 
-<!-- [![使用 EdgeOne Pages 部署](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://console.cloud.tencent.com/edgeone/pages/new?repository-url=https%3A%2F%2Fgithub.com%2Fsylingd%2Fbark-worker-server&env=DB_NAME,ALLOW_NEW_DEVICE,ALLOW_QUERY_NUMS) -->
+[部署教程](https://github.com/sylingd/bark-worker-server/discussions/2)
 
 ### 阿里云 ESA
 
-* 待编写
+[部署教程](https://github.com/sylingd/bark-worker-server/discussions/3)
 
 ### Cloudflare Worker
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https%3A%2F%2Fgithub.com%2Fsylingd%2Fbark-worker-server)
 
-* 待编写
+[部署教程](https://github.com/sylingd/bark-worker-server/discussions/4)
 
 ## 已知问题
 
