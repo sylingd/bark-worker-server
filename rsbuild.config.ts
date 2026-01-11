@@ -7,7 +7,7 @@ const defines: any = {
 };
 
 if (process.env.ENTRY === 'esa') {
-  defines['process.env.ROOT_PATH'] = JSON.stringify(process.env.ROOT_PATH);
+  defines['process.env.URL_PREFIX'] = JSON.stringify(process.env.URL_PREFIX);
   defines['process.env.MAX_BATCH_PUSH_COUNT'] = JSON.stringify(
     process.env.MAX_BATCH_PUSH_COUNT,
   );
@@ -76,9 +76,9 @@ export default defineConfig({
             const cwd = process.cwd();
             const dist = path.join(__dirname, 'dist');
             let functions = path.join(cwd, 'edge-functions');
-            if (process.env.ROOT_PATH) {
-              console.log(`Detected ROOT_PATH: ${process.env.ROOT_PATH}`);
-              functions = path.join(functions, process.env.ROOT_PATH);
+            if (process.env.URL_PREFIX) {
+              console.log(`Detected URL_PREFIX: ${process.env.URL_PREFIX}`);
+              functions = path.join(functions, process.env.URL_PREFIX);
             }
             await fs.ensureDir(functions);
             const target = path.join(functions, '[[default]].js');

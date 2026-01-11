@@ -29,7 +29,7 @@ interface ESAHonoEnv extends Env {
 }
 
 const hono: Hono<ESAHonoEnv> = createHono<ESAHonoEnv>({
-  basePath: process.env.ROOT_PATH || '/',
+  basePath: process.env.URL_PREFIX || '/',
   createAPI: async () => {
     return new API(new Database(new NodeKV()), {
       allowNewDevice: process.env.ALLOW_NEW_DEVICE !== 'false',

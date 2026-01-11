@@ -19,7 +19,7 @@ let hono: Hono<EOHonoEnv>;
 export const onRequest = (ctx: EOEventContext) => {
   if (!hono) {
     hono = createHono<EOHonoEnv>({
-      basePath: ctx.env.ROOT_PATH || '/',
+      basePath: ctx.env.URL_PREFIX || '/',
       createAPI: async (c) => {
         return new API(
           new Database((globalThis as any)[c.env.DB_NAME || 'BARK_KV']),

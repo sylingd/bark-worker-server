@@ -24,7 +24,7 @@ const env = {
   ALLOW_NEW_DEVICE: process.env.ALLOW_NEW_DEVICE || 'true',
   ALLOW_QUERY_NUMS: process.env.ALLOW_QUERY_NUMS || 'true',
   BASIC_AUTH: process.env.BASIC_AUTH || '',
-  ROOT_PATH: process.env.ROOT_PATH || '/',
+  URL_PREFIX: process.env.URL_PREFIX || '/',
   MAX_BATCH_PUSH_COUNT: process.env.MAX_BATCH_PUSH_COUNT,
 };
 
@@ -32,7 +32,7 @@ export default {
   fetch(request: Request) {
     if (!hono) {
       hono = createHono<ESAHonoEnv>({
-        basePath: env.ROOT_PATH || '/',
+        basePath: env.URL_PREFIX || '/',
         createAPI: async () => {
           return new API(
             new Database(new EdgeKV({ namespace: env.DB_NAME || 'bark' })),

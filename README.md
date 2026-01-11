@@ -8,8 +8,6 @@ Bark Worker Server 是一个 [Bark-Server](https://github.com/Finb/bark-server) 
 
 ### EdgeOne
 
-[![使用 EdgeOne Pages 部署](https://cdnstatic.tencentcs.com/edgeone/pages/deploy.svg)](https://console.cloud.tencent.com/edgeone/pages/new?repository-url=https%3A%2F%2Fgithub.com%2Fsylingd%2Fbark-worker-server&env=DB_NAME,ALLOW_NEW_DEVICE,ALLOW_QUERY_NUMS)
-
 [部署教程](https://github.com/sylingd/bark-worker-server/discussions/2)
 
 ### 阿里云 ESA
@@ -35,8 +33,8 @@ Bark Worker Server 是一个 [Bark-Server](https://github.com/Finb/bark-server) 
 * `ALLOW_QUERY_NUMS` 是否允许查询设备数量，默认为 `true`
 * `MAX_BATCH_PUSH_COUNT` 批量推送最大数量，默认不限制
 * `BASIC_AUTH` 是否启用 HTTP Basic Auth，默认不启用
-* `ROOT_PATH` 部署路径，默认为 `/`
-  * 例如：当你填写部署路径为 `/bark` 时，在 Bark App 中填写的服务器地址为 `https://你的域名/bark`，注意末尾不要有“/”
+* `URL_PREFIX` 部署路径，默认为 `/`
+  * 例如：当你填写部署路径为 `/bark` 时，在 Bark App 中填写的服务器地址为 `https://你的域名/bark`，注意开头必须要有“/”，末尾不要有“/”
 
 ## 其他
 

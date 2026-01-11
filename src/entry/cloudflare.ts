@@ -14,7 +14,7 @@ export default {
   fetch(request: Request, env: BasicEnv, ctx: any) {
     if (!hono) {
       hono = createHono({
-        basePath: env.ROOT_PATH || '/',
+        basePath: env.URL_PREFIX || '/',
         createAPI: async (c) => {
           return new API(
             new Database((c.env as any)[c.env.DB_NAME || 'BARK_KV']),
