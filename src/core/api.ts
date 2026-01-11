@@ -94,7 +94,7 @@ export class API {
     });
   }
 
-  async ping() {
+  ping() {
     return buildSuccess(undefined, 'pong');
   }
 

@@ -1,4 +1,5 @@
 import { type Context, type Env, Hono } from 'hono';
+import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import { API, APIError, type PushParameters } from './api';
 import type { Options } from './type';
 import { getTimestamp, validateBasicAuth } from './utils';
@@ -155,20 +156,9 @@ export const createHono = <T extends Env>(options: Options) => {
     );
   });
 
-  router.all('/ping', async (c) => {
-    return c.json(await api.ping());
-  });
+  router.all('/ping', (c) => c.json(api.ping()));
 
-  router.all(
-    '/healthz',
-    () =>
-      new Response('ok', {
-        status: 200,
-        headers: {
-          'content-type': 'text/plain',
-        },
-      }),
-  );
+  router.all('/healthz', (c) => c.text('ok'));
 
   router.all('/info', async (c) => {
     if (!validateBasicAuth(c.req.header('Authorization'), options.basicAuth)) {
@@ -189,60 +179,18 @@ export const createHono = <T extends Env>(options: Options) => {
   // compat v1 API
   registerV1(router as unknown as Hono, api);
 
-  router.all(
-    '/',
-    () =>
-      new Response('ok', {
-        status: 200,
-        headers: {
-          'content-type': 'text/plain',
-        },
-      }),
-  );
+  router.all('/', (c) => c.text('ok'));
 
-  app.onError((err) => {
-    if (err instanceof APIError) {
-      return new Response(
-        JSON.stringify({
-          code: err.code,
-          message: err.message,
-          timestamp: err.timestamp,
-        }),
-        {
-          status: err.code,
-          headers: {
-            'content-type': 'application/json',
-          },
-        },
-      );
-    }
-    if (err instanceof Error) {
-      return new Response(
-        JSON.stringify({
-          code: 500,
-          message: err.message,
-          timestamp: getTimestamp(),
-        }),
-        {
-          status: 500,
-          headers: {
-            'content-type': 'application/json',
-          },
-        },
-      );
-    }
-    return new Response(
-      JSON.stringify({
-        code: 500,
-        message: String(err),
-        timestamp: getTimestamp(),
-      }),
+  app.onError((err, c) => {
+    const errCode = err instanceof APIError ? err.code : 500;
+    const message = err instanceof Error ? err.message : String(err);
+    return c.json(
       {
-        status: 500,
-        headers: {
-          'content-type': 'application/json',
-        },
+        code: errCode,
+        message,
+        timestamp: getTimestamp(),
       },
+      errCode as ContentfulStatusCode,
     );
   });
 

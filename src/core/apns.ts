@@ -1,4 +1,4 @@
-import type { DBAdapter } from './type';
+import type { DBAdapter, NullLike } from './type';
 import { base64ToArrayBuffer, getTimestamp } from './utils';
 
 const TOPIC = 'me.fin.bark';
@@ -54,15 +54,19 @@ const generateAuthToken = async () => {
   return AUTHENTICATION_TOKEN;
 };
 
+let authToken: string | NullLike = null;
 const getAuthToken = async (db: DBAdapter) => {
-  const authToken = await db.getAuthorizationToken();
+  if (authToken) {
+    return authToken;
+  }
+  authToken = await db.getAuthorizationToken();
   if (authToken) {
     return authToken;
   }
 
-  const newToken = await generateAuthToken();
-  await db.saveAuthorizationToken(newToken, 3000000); // 有效期是一小时，向下取一点
-  return newToken;
+  authToken = await generateAuthToken();
+  await db.saveAuthorizationToken(authToken, 3000000); // 有效期是一小时，向下取一点
+  return authToken;
 };
 
 export const push = async (
