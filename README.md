@@ -35,7 +35,7 @@ Bark Worker Server 是一个 [Bark-Server](https://github.com/Finb/bark-server) 
 
 ## 配置项
 
-* `DB_NAME` KV 数据库名称。默认在 Cloudflare Workers 下为 `BARK_KV`，EdgeOne 和 ESA 下为 `bark`
+* `DB_NAME` KV 数据库名称。默认在 Cloudflare Workers、EdgeOne 下为 `BARK_KV`，ESA 下为 `bark`
 * `ALLOW_NEW_DEVICE` 是否允许新设备注册，默认为 `true`
 * `ALLOW_QUERY_NUMS` 是否允许查询设备数量，默认为 `true`
 * `MAX_BATCH_PUSH_COUNT` 批量推送最大数量，默认不限制

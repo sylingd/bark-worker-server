@@ -22,7 +22,7 @@ export const onRequest = (ctx: EOEventContext) => {
       basePath: ctx.env.ROOT_PATH || '/',
       createAPI: async (c) => {
         return new API(
-          new Database((globalThis as any)[c.env.DB_NAME || 'bark']),
+          new Database((globalThis as any)[c.env.DB_NAME || 'BARK_KV']),
           {
             allowNewDevice: c.env.ALLOW_NEW_DEVICE !== 'false',
             allowQueryNums: c.env.ALLOW_QUERY_NUMS !== 'false',
