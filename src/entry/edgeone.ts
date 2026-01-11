@@ -21,14 +21,11 @@ export const onRequest = (ctx: EOEventContext) => {
     hono = createHono<EOHonoEnv>({
       basePath: ctx.env.ROOT_PATH || '/',
       createAPI: async (c) => {
-        return new API(
-          new Database((globalThis as any)[c.env.DB_NAME || 'BARK_KV']),
-          {
-            allowNewDevice: c.env.ALLOW_NEW_DEVICE !== 'false',
-            allowQueryNums: c.env.ALLOW_QUERY_NUMS !== 'false',
-            maxBatchPushCount: Number(c.env.MAX_BATCH_PUSH_COUNT),
-          },
-        );
+        return new API(new Database(eval(`${c.env.DB_NAME} || 'BARK_KV';`)), {
+          allowNewDevice: c.env.ALLOW_NEW_DEVICE !== 'false',
+          allowQueryNums: c.env.ALLOW_QUERY_NUMS !== 'false',
+          maxBatchPushCount: Number(c.env.MAX_BATCH_PUSH_COUNT),
+        });
       },
       getBasicAuth: (c) => c.env.BASIC_AUTH,
     });
