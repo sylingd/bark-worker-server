@@ -27,11 +27,14 @@ export class Database {
   }
 
   async saveDeviceTokenByKey(key: string, token: string) {
+    if (!token) {
+      return this.deleteDeviceByKey(key);
+    }
     const deviceToken = (token || '').replace(/[^a-z0-9]/g, '') || '';
     const k = `device_${key}`;
     // updateCount
     this.kv.get(k).then((value) => {
-      if (value) {
+      if (!value) {
         this.updateCount(1);
       }
     });
