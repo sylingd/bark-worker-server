@@ -10,10 +10,47 @@ const parseBody = async (c: Context): Promise<PushParameters> => {
   return isJSON ? await c.req.json() : await c.req.parseBody();
 };
 
+const parseQuery = (c: Context, exclude?: Array<keyof PushParameters>) => {
+  const list: Array<keyof PushParameters> = [
+    'title',
+    'subtitle',
+    'body',
+    'sound',
+    'group',
+    'call',
+    'isArchive',
+    'icon',
+    'ciphertext',
+    'level',
+    'volume',
+    'url',
+    'image',
+    'copy',
+    'badge',
+    'autoCopy',
+    'action',
+    'iv',
+    'id',
+    'delete',
+    'markdown',
+  ];
+  const result: PushParameters = {};
+  for (const k of list) {
+    if (!exclude || !exclude.includes(k)) {
+      const v = c.req.query(k);
+      if (v) {
+        result[k] = v as any;
+      }
+    }
+  }
+  return result;
+};
+
 const registerV1 = async (app: Hono, getAPI: () => API) => {
   app.get('/:device_key', async (c) =>
     c.json(
       await getAPI().push({
+        ...parseQuery(c, ['device_key']),
         device_key: parseParam(c.req.param('device_key')),
       }),
     ),
@@ -30,6 +67,7 @@ const registerV1 = async (app: Hono, getAPI: () => API) => {
   app.get('/:device_key/:body', async (c) =>
     c.json(
       await getAPI().push({
+        ...parseQuery(c, ['device_key', 'body']),
         device_key: parseParam(c.req.param('device_key')),
         body: parseParam(c.req.param('body')),
       }),
@@ -38,6 +76,7 @@ const registerV1 = async (app: Hono, getAPI: () => API) => {
   app.post('/:device_key/:body', async (c) =>
     c.json(
       await getAPI().push({
+        ...(await parseBody(c)),
         device_key: parseParam(c.req.param('device_key')),
         body: parseParam(c.req.param('body')),
       }),
@@ -47,6 +86,7 @@ const registerV1 = async (app: Hono, getAPI: () => API) => {
   app.get('/:device_key/:title/:body', async (c) =>
     c.json(
       await getAPI().push({
+        ...parseQuery(c, ['device_key', 'title', 'body']),
         device_key: parseParam(c.req.param('device_key')),
         title: parseParam(c.req.param('title')),
         body: parseParam(c.req.param('body')),
@@ -56,6 +96,7 @@ const registerV1 = async (app: Hono, getAPI: () => API) => {
   app.post('/:device_key/:title/:body', async (c) =>
     c.json(
       await getAPI().push({
+        ...(await parseBody(c)),
         device_key: parseParam(c.req.param('device_key')),
         title: parseParam(c.req.param('title')),
         body: parseParam(c.req.param('body')),
@@ -66,6 +107,7 @@ const registerV1 = async (app: Hono, getAPI: () => API) => {
   app.get('/:device_key/:title/:subtitle/:body', async (c) =>
     c.json(
       await getAPI().push({
+        ...parseQuery(c, ['device_key', 'title', 'subtitle', 'body']),
         device_key: parseParam(c.req.param('device_key')),
         title: parseParam(c.req.param('title')),
         subtitle: parseParam(c.req.param('subtitle')),
@@ -76,6 +118,7 @@ const registerV1 = async (app: Hono, getAPI: () => API) => {
   app.post('/:device_key/:title/:subtitle/:body', async (c) =>
     c.json(
       await getAPI().push({
+        ...(await parseBody(c)),
         device_key: parseParam(c.req.param('device_key')),
         title: parseParam(c.req.param('title')),
         subtitle: parseParam(c.req.param('subtitle')),
