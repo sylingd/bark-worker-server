@@ -32,7 +32,7 @@ export const onRequest = async (ctx: EOEventContext) => {
 
   const body = await ctx.request.json();
 
-  console.log('payload', body);
+  console.log('payload', JSON.stringify(body));
 
   const queue = await Promise.all(
     body.map(async (item: APNsProxyItem) => {
