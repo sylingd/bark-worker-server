@@ -57,19 +57,16 @@ const requestAPNs: NonNullable<Options['requestAPNs']> = (
       timer = undefined;
       const cloneQueue = [...queue];
       queue = [];
-      const u = new URL(`https://${ctx.req.header('host')}`);
-      if (env.URL_PREFIX && env.URL_PREFIX !== '/') {
-        u.pathname = `/${env.URL_PREFIX}-node-proxy`;
-      } else {
-        u.pathname = '/node-proxy';
-      }
-      const f = await fetch(u.toString(), {
-        method: 'POST',
-        headers: {
-          'x-token': String(env.PROXY_TOKEN),
+      const f = await fetch(
+        `https://${ctx.req.header('host')}/${env.URL_PREFIX}-node/apns-proxy`,
+        {
+          method: 'POST',
+          headers: {
+            'x-token': String(env.PROXY_TOKEN),
+          },
+          body: JSON.stringify(cloneQueue),
         },
-        body: JSON.stringify(cloneQueue),
-      });
+      );
       const resp = await f.json();
       if (!resp.data) {
         throw new Error('Execute queue failed');

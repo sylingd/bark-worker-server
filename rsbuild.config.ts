@@ -38,10 +38,14 @@ if (process.env.ENTRY === 'edgeone') {
     console.log(`Use PROXY_TOKEN: ${proxyToken}`);
   }
   defines['process.env.PROXY_TOKEN'] = JSON.stringify(proxyToken);
-  otherEntry['node-proxy'] = {
-    import: `./src/entry/edgeone-node-proxy.ts`,
+  otherEntry['apns-proxy'] = {
+    import: `./src/entry/edgeone-apns-proxy.ts`,
     html: false,
   };
+
+  if (!process.env.URL_PREFIX || process.env.URL_PREFIX === '/') {
+    throw new Error('Please set URL_PREFIX');
+  }
 }
 
 // Docs: https://rsbuild.rs/config/
@@ -97,30 +101,35 @@ export default defineConfig({
       setup(api) {
         api.onAfterBuild(async () => {
           if (process.env.ENTRY === 'edgeone') {
+            if (!process.env.URL_PREFIX || process.env.URL_PREFIX === '/') {
+              throw new Error('Please set URL_PREFIX');
+            }
             const cwd = process.cwd();
             const dist = path.join(__dirname, 'dist');
-            let functions = path.join(cwd, 'edge-functions');
-            let nodeProxy = path.join(cwd, 'node-functions');
-            if (process.env.URL_PREFIX && process.env.URL_PREFIX !== '/') {
-              console.log(`Detected URL_PREFIX: ${process.env.URL_PREFIX}`);
-              functions = path.join(functions, process.env.URL_PREFIX);
-              nodeProxy = `${path.join(nodeProxy, process.env.URL_PREFIX)}-node-proxy.js`;
-            } else {
-              nodeProxy = path.join(nodeProxy, 'node-proxy.js');
-            }
+            const functions = path.join(
+              cwd,
+              'edge-functions',
+              process.env.URL_PREFIX,
+            );
+            const nodeFunctions = path.join(
+              cwd,
+              'node-functions',
+              `${process.env.URL_PREFIX}-node`,
+            );
             await fs.ensureDir(functions);
-            await fs.ensureDir(path.dirname(nodeProxy));
+            await fs.ensureDir(nodeFunctions);
             const target = path.join(functions, '[[default]].js');
             if (await fs.pathExists(target)) {
               await fs.remove(target);
             }
-            if (await fs.pathExists(nodeProxy)) {
-              await fs.remove(nodeProxy);
+            const nodeTarget = path.join(nodeFunctions, 'apns-proxy.js');
+            if (await fs.pathExists(nodeTarget)) {
+              await fs.remove(nodeTarget);
             }
             console.log(`Move handler.js to ${target}`);
             await fs.move(path.join(dist, 'handler.js'), target);
-            console.log(`Move node-proxy.js to ${nodeProxy}`);
-            await fs.move(path.join(dist, 'node-proxy.js'), nodeProxy);
+            console.log(`Move apns-proxy.js to ${nodeTarget}`);
+            await fs.move(path.join(dist, 'apns-proxy.js'), nodeTarget);
           }
         });
       },
