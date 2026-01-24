@@ -112,7 +112,9 @@ export const onRequest = (ctx: EOEventContext) => {
       urlPrefix: ctx.env.URL_PREFIX || '/',
       basicAuth: ctx.env.BASIC_AUTH,
       apnsUrl: ctx.env.APNS_URL,
-      requestAPNs: APNsProxy.request.bind(APNsProxy),
+      requestAPNs: ctx.env.APNS_URL
+        ? undefined
+        : APNsProxy.request.bind(APNsProxy),
     });
   }
   return hono.fetch(ctx.request, ctx.env);

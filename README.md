@@ -14,7 +14,7 @@ Bark Worker Server 是一个 [Bark-Server](https://github.com/Finb/bark-server) 
 
 ### EdgeOne
 
-**EdgeOne 边缘节点目前无法直接连接 APNs 服务，需结合规则引擎配置回源**
+**EdgeOne 边缘节点目前无法直接连接 APNs 服务，需通过 Node Functions 反代，必须配置 URL_PREFIX**
 
 [部署教程](https://github.com/sylingd/bark-worker-server/wiki/EdgeOne-%E9%83%A8%E7%BD%B2) [国内镜像](https://gitee.com/sy/bark-worker-server/wikis/EdgeOne-%E9%83%A8%E7%BD%B2)
 
