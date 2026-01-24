@@ -1,5 +1,6 @@
-import { APNS_HOST_NAME, requestAPNs } from '../core/apns';
-import type { APNsProxyItem, BasicEnv } from '../core/type';
+import ky from 'ky';
+import { APNS_HOST_NAME } from '../core/apns';
+import type { APNsProxyItem, APNsResponse, BasicEnv } from '../core/type';
 
 interface EOEventContext {
   params: any;
@@ -13,6 +14,32 @@ const jsonResponse = (data: any) =>
       'Content-Type': 'application/json',
     },
   });
+
+const requestAPNs = async (
+  domain: string,
+  deviceToken: string,
+  headers: Record<string, string>,
+  aps: any,
+): Promise<APNsResponse> => {
+  const res = await ky.post(`https://${domain}/3/device/${deviceToken}`, {
+    headers: headers,
+    json: aps,
+  });
+
+  let message: string;
+  const responseText = await res.text();
+
+  try {
+    message = JSON.parse(responseText).reason;
+  } catch (_) {
+    message = responseText;
+  }
+
+  return {
+    status: res.status,
+    message,
+  };
+};
 
 export const onRequest = async (ctx: EOEventContext) => {
   const token = process.env.PROXY_TOKEN;
@@ -36,16 +63,24 @@ export const onRequest = async (ctx: EOEventContext) => {
 
   const queue = await Promise.all(
     body.map(async (item: APNsProxyItem) => {
-      const res = await requestAPNs(
-        ctx.env.APNS_URL || APNS_HOST_NAME,
-        item.deviceToken,
-        item.headers,
-        item.aps,
-      );
-      return {
-        ...res,
-        id: item.id,
-      };
+      try {
+        const res = await requestAPNs(
+          ctx.env.APNS_URL || APNS_HOST_NAME,
+          item.deviceToken,
+          item.headers,
+          item.aps,
+        );
+        return {
+          ...res,
+          id: item.id,
+        };
+      } catch (e) {
+        return {
+          status: 500,
+          message: (e as Error).message,
+          id: item.id,
+        };
+      }
     }),
   );
 

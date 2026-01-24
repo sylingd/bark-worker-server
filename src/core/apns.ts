@@ -128,15 +128,22 @@ export const push = async (
     } catch (e) {
       return {
         status: 500,
-        message: `${(e as Error).message} ${(e as Error).stack}`,
+        message: (e as Error).message,
       };
     }
   }
 
-  return requestAPNs(
-    options.apnsUrl || APNS_HOST_NAME,
-    deviceToken,
-    finalHeaders,
-    aps,
-  );
+  try {
+    return await requestAPNs(
+      options.apnsUrl || APNS_HOST_NAME,
+      deviceToken,
+      finalHeaders,
+      aps,
+    );
+  } catch (e) {
+    return {
+      status: 500,
+      message: (e as Error).message,
+    };
+  }
 };
