@@ -1,7 +1,14 @@
 import type { Env, Hono } from 'hono';
+import { nanoid } from 'nanoid/non-secure';
 import { KVAdapter } from '../core/db/kv-adapter';
 import { createHono } from '../core/hono';
-import type { BasicEnv } from '../core/type';
+import type {
+  APNsProxyItem,
+  APNsProxyResponse,
+  APNsResponse,
+  BasicEnv,
+  Options,
+} from '../core/type';
 
 interface EOEventContext {
   params: any;
@@ -15,6 +22,65 @@ interface EOHonoEnv extends Env {
 
 let hono: Hono<EOHonoEnv>;
 
+interface QueueItem extends APNsProxyItem {
+  resolve: (value: APNsResponse) => void;
+}
+
+let queue: QueueItem[] = [];
+let timer: ReturnType<typeof setTimeout> | undefined;
+const requestAPNs: NonNullable<Options['requestAPNs']> = (
+  deviceToken,
+  headers,
+  aps,
+  ctx,
+) => {
+  if (!ctx) {
+    throw new Error('ctx is not defined');
+  }
+  const env: BasicEnv = ctx.env;
+  return new Promise((resolve) => {
+    let id = nanoid();
+    while (queue.some((x) => x.id === id)) {
+      id = nanoid();
+    }
+    queue.push({
+      id,
+      deviceToken,
+      headers,
+      aps,
+      resolve,
+    });
+    if (typeof timer !== 'undefined') {
+      return;
+    }
+    timer = setTimeout(async () => {
+      timer = undefined;
+      const cloneQueue = [...queue];
+      queue = [];
+      const u = new URL(`https://${ctx.req.header('host')}`);
+      if (env.URL_PREFIX && env.URL_PREFIX !== '/') {
+        u.pathname = `/${env.URL_PREFIX}-node-proxy`;
+      } else {
+        u.pathname = '/node-proxy';
+      }
+      const f = await fetch(u.toString(), {
+        method: 'POST',
+        headers: {
+          'x-token': String(env.PROXY_TOKEN),
+        },
+        body: JSON.stringify(cloneQueue),
+      });
+      const resp = await f.json();
+      if (!resp.data) {
+        throw new Error('Execute queue failed');
+      }
+      resp.data.forEach((item: APNsProxyResponse) => {
+        cloneQueue.find((x) => x.id === item.id)?.resolve(item);
+      });
+    });
+  });
+};
+
 export const onRequest = (ctx: EOEventContext) => {
   if (!hono) {
     hono = createHono({
@@ -25,6 +91,7 @@ export const onRequest = (ctx: EOEventContext) => {
       urlPrefix: ctx.env.URL_PREFIX || '/',
       basicAuth: ctx.env.BASIC_AUTH,
       apnsUrl: ctx.env.APNS_URL,
+      requestAPNs,
     });
   }
   return hono.fetch(ctx.request, ctx.env);

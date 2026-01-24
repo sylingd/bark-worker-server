@@ -1,8 +1,9 @@
-import type { DBAdapter, NullLike } from './type';
+import type { Context } from 'hono';
+import type { APNsResponse, DBAdapter, NullLike, Options } from './type';
 import { base64ToArrayBuffer, getTimestamp } from './utils';
 
 const TOPIC = 'me.fin.bark';
-const APNS_HOST_NAME = 'api.push.apple.com';
+export const APNS_HOST_NAME = 'api.push.apple.com';
 const generateAuthToken = async () => {
   const TOKEN_KEY = `-----BEGIN PRIVATE KEY-----
   MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQg4vtC3g5L5HgKGJ2+
@@ -69,36 +70,66 @@ const getAuthToken = async (db: DBAdapter) => {
   return authToken;
 };
 
-export const push = async (
-  db: DBAdapter,
+export const requestAPNs = async (
+  domain: string,
   deviceToken: string,
   headers: Record<string, string>,
   aps: any,
-  domain?: string,
-) => {
-  const AUTHENTICATION_TOKEN = await getAuthToken(db);
+): Promise<APNsResponse> => {
+  const res = await fetch(`https://${domain}/3/device/${deviceToken}`, {
+    method: 'POST',
+    headers,
+    body: JSON.stringify(aps),
+  });
 
-  return await fetch(
-    `https://${domain || APNS_HOST_NAME}/3/device/${deviceToken}`,
-    {
-      method: 'POST',
-      headers: JSON.parse(
-        JSON.stringify({
-          'apns-topic': headers['apns-topic'] || TOPIC,
-          'apns-id': headers['apns-id'] || undefined,
-          'apns-collapse-id': headers['apns-collapse-id'] || undefined,
-          'apns-priority':
-            Number(headers['apns-priority']) > 0
-              ? headers['apns-priority']
-              : undefined,
-          'apns-expiration':
-            headers['apns-expiration'] || getTimestamp() + 86400,
-          'apns-push-type': headers['apns-push-type'] || 'alert',
-          authorization: `bearer ${AUTHENTICATION_TOKEN}`,
-          'content-type': 'application/json',
-        }),
-      ),
-      body: JSON.stringify(aps),
-    },
+  let message: string;
+  const responseText = await res.text();
+
+  try {
+    message = JSON.parse(responseText).reason;
+  } catch (_) {
+    message = responseText;
+  }
+
+  return {
+    status: res.status,
+    message,
+  };
+};
+
+export const push = async (
+  options: Options,
+  deviceToken: string,
+  headers: Record<string, string>,
+  aps: any,
+  ctx?: Context,
+): Promise<APNsResponse> => {
+  const token = await getAuthToken(options.db);
+
+  const finalHeaders = JSON.parse(
+    JSON.stringify({
+      'apns-topic': headers['apns-topic'] || TOPIC,
+      'apns-id': headers['apns-id'] || undefined,
+      'apns-collapse-id': headers['apns-collapse-id'] || undefined,
+      'apns-priority':
+        Number(headers['apns-priority']) > 0
+          ? headers['apns-priority']
+          : undefined,
+      'apns-expiration': headers['apns-expiration'] || getTimestamp() + 86400,
+      'apns-push-type': headers['apns-push-type'] || 'alert',
+      authorization: `bearer ${token}`,
+      'content-type': 'application/json',
+    }),
+  );
+
+  if (options.requestAPNs) {
+    return options.requestAPNs(deviceToken, finalHeaders, aps, ctx);
+  }
+
+  return requestAPNs(
+    options.apnsUrl || APNS_HOST_NAME,
+    deviceToken,
+    finalHeaders,
+    aps,
   );
 };

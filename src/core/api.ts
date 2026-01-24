@@ -1,3 +1,4 @@
+import type { Context } from 'hono';
 import { push } from './apns';
 import type { DBAdapter, Options } from './type';
 import { getTimestamp, newShortUUID } from './utils';
@@ -114,7 +115,7 @@ export class API {
     };
   }
 
-  async push(parameters: PushParameters) {
+  async push(parameters: PushParameters, ctx?: Context) {
     // batch
     if (
       Array.isArray(parameters.device_keys) &&
@@ -136,7 +137,7 @@ export class API {
         data: await Promise.all(
           parameters.device_keys.map(async (deviceKey) => {
             try {
-              const res = await this.pushOne(deviceKey, parameters);
+              const res = await this.pushOne(deviceKey, parameters, ctx);
               return {
                 code: res.code,
                 device_key: deviceKey,
@@ -159,10 +160,14 @@ export class API {
     if (!deviceKey) {
       throw new APIError(400, 'device key is empty');
     }
-    return this.pushOne(deviceKey, parameters);
+    return this.pushOne(deviceKey, parameters, ctx);
   }
 
-  private async pushOne(deviceKey: string, parameters: PushParameters) {
+  private async pushOne(
+    deviceKey: string,
+    parameters: PushParameters,
+    ctx?: Context,
+  ) {
     const deviceToken = await this.db.deviceTokenByKey(deviceKey);
     if (deviceToken === undefined) {
       throw new APIError(
@@ -257,34 +262,19 @@ export class API {
       headers['apns-collapse-id'] = parameters.id;
     }
 
-    const response = await push(
-      this.db,
-      deviceToken,
-      headers,
-      aps,
-      this.options.apnsUrl,
-    );
+    const response = await push(this.options, deviceToken, headers, aps, ctx);
 
     if (response.status === 200) {
       return buildSuccess(undefined);
     }
 
-    let message: string;
-    const responseText = await response.text();
-
-    try {
-      message = JSON.parse(responseText).reason;
-    } catch (_) {
-      message = responseText;
-    }
-
     if (
       response.status === 410 ||
-      (response.status === 400 && message.includes('BadDeviceToken'))
+      (response.status === 400 && response.message.includes('BadDeviceToken'))
     ) {
       await this.db.saveDeviceTokenByKey(deviceKey, '');
     }
 
-    throw new APIError(response.status, `push failed: ${message}`);
+    throw new APIError(response.status, `push failed: ${response.message}`);
   }
 }

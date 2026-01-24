@@ -1,3 +1,5 @@
+import type { Context } from 'hono';
+
 export type BasicEnv = Partial<{
   DB_NAME: string;
   ALLOW_NEW_DEVICE: string;
@@ -6,6 +8,7 @@ export type BasicEnv = Partial<{
   BASIC_AUTH: string;
   URL_PREFIX: string;
   APNS_URL: string;
+  PROXY_TOKEN: string;
 }>;
 
 export type NullLike = null | undefined;
@@ -19,6 +22,22 @@ export interface DBAdapter {
   getAuthorizationToken(): Promise<string | NullLike>;
 }
 
+export interface APNsResponse {
+  status: number;
+  message: string;
+}
+
+export interface APNsProxyResponse extends APNsResponse {
+  id: string;
+}
+
+export interface APNsProxyItem {
+  id: string;
+  deviceToken: string;
+  headers: Record<string, string>;
+  aps: any;
+}
+
 export interface Options {
   db: DBAdapter;
   allowNewDevice: boolean;
@@ -27,4 +46,10 @@ export interface Options {
   basicAuth?: string;
   urlPrefix?: string;
   apnsUrl?: string;
+  requestAPNs?: (
+    deviceToken: string,
+    headers: Record<string, string>,
+    aps: any,
+    ctx?: Context,
+  ) => Promise<APNsResponse>;
 }

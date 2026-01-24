@@ -45,6 +45,9 @@ importers:
       lint-staged:
         specifier: ^16.2.7
         version: 16.2.7
+      nanoid:
+        specifier: ^5.1.6
+        version: 5.1.6
       simple-git-hooks:
         specifier: ^2.13.1
         version: 2.13.1
@@ -524,6 +527,11 @@ packages:
   nano-spawn@2.0.0:
     resolution: {integrity: sha512-tacvGzUY5o2D8CBh2rrwxyNojUsZNU2zjNTzKQrkgGJQTbGAfArVWXSKMBokBeeg6C7OLRGUEyoFlYbfeWQIqw==}
     engines: {node: '>=20.17'}
+
+  nanoid@5.1.6:
+    resolution: {integrity: sha512-c7+7RQ+dMB5dPwwCp4ee1/iV/q2P6aK1mTZcfr1BTuVlyW9hJYiMPybJCcnBlQtuSmTIWNeazm/zqNoZSSElBg==}
+    engines: {node: ^18 || >=20}
+    hasBin: true
 
   onetime@7.0.0:
     resolution: {integrity: sha512-VXJjc87FScF88uafS3JllDgvAm+c/Slfz06lorj2uAY34rlUu0Nt+v8wreiImcrgAjjIHp1rXpTDlLOGw29WwQ==}
@@ -1098,6 +1106,8 @@ snapshots:
   min-indent@1.0.1: {}
 
   nano-spawn@2.0.0: {}
+
+  nanoid@5.1.6: {}
 
   onetime@7.0.0:
     dependencies:
