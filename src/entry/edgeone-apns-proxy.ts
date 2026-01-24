@@ -15,7 +15,7 @@ const jsonResponse = (data: any) =>
   });
 
 export const onRequest = async (ctx: EOEventContext) => {
-  const token = ctx.env.PROXY_TOKEN;
+  const token = process.env.PROXY_TOKEN;
   if (!token) {
     return jsonResponse({
       code: 400,

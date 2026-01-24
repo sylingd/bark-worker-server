@@ -123,7 +123,14 @@ export const push = async (
   );
 
   if (options.requestAPNs) {
-    return options.requestAPNs(deviceToken, finalHeaders, aps, ctx);
+    try {
+      return await options.requestAPNs(deviceToken, finalHeaders, aps, ctx);
+    } catch (e) {
+      return {
+        status: 500,
+        message: (e as Error).message,
+      };
+    }
   }
 
   return requestAPNs(

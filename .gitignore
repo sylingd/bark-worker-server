@@ -18,3 +18,9 @@ dist/
 .edgeone
 node-functions/
 edge-functions/
+
+# Tencent Cloud EdgeOne
+.env
+.edgeone/*
+.tef_dist/*
+  

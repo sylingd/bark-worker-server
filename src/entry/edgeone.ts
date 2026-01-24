@@ -24,45 +24,36 @@ let hono: Hono<EOHonoEnv>;
 
 interface QueueItem extends APNsProxyItem {
   resolve: (value: APNsResponse) => void;
+  reject: (reason?: Error) => void;
 }
 
-let queue: QueueItem[] = [];
-let timer: ReturnType<typeof setTimeout> | undefined;
-const requestAPNs: NonNullable<Options['requestAPNs']> = (
-  deviceToken,
-  headers,
-  aps,
-  ctx,
-) => {
-  if (!ctx) {
-    throw new Error('ctx is not defined');
-  }
-  const env: BasicEnv = ctx.env;
-  return new Promise((resolve) => {
-    let id = nanoid();
-    while (queue.some((x) => x.id === id)) {
-      id = nanoid();
-    }
-    queue.push({
-      id,
-      deviceToken,
-      headers,
-      aps,
-      resolve,
-    });
-    if (typeof timer !== 'undefined') {
-      return;
-    }
-    timer = setTimeout(async () => {
-      timer = undefined;
-      const cloneQueue = [...queue];
-      queue = [];
+interface IAPNsProxy {
+  host: string;
+  prefix: string;
+  token: string;
+  queue: QueueItem[];
+  timer: ReturnType<typeof setTimeout> | undefined;
+  execute: () => Promise<void>;
+  request: NonNullable<Options['requestAPNs']>;
+}
+
+const APNsProxy: IAPNsProxy = {
+  host: '',
+  prefix: '',
+  token: process.env.PROXY_TOKEN as string,
+  queue: [],
+  timer: undefined,
+  execute: async function (this: IAPNsProxy) {
+    this.timer = undefined;
+    const cloneQueue = [...this.queue];
+    this.queue = [];
+    try {
       const f = await fetch(
-        `https://${ctx.req.header('host')}${env.URL_PREFIX}-node/apns-proxy`,
+        `https://${this.host}${this.prefix}-node/apns-proxy`,
         {
           method: 'POST',
           headers: {
-            'x-token': String(env.PROXY_TOKEN),
+            'x-token': this.token,
           },
           body: JSON.stringify(cloneQueue),
         },
@@ -74,8 +65,38 @@ const requestAPNs: NonNullable<Options['requestAPNs']> = (
       resp.data.forEach((item: APNsProxyResponse) => {
         cloneQueue.find((x) => x.id === item.id)?.resolve(item);
       });
+    } catch (e) {
+      cloneQueue.forEach((x) => x.reject(e as Error));
+    }
+  },
+  request: function (this: IAPNsProxy, deviceToken, headers, aps, ctx) {
+    if (!ctx) {
+      throw new Error('ctx is not defined');
+    }
+    const env: BasicEnv = ctx.env;
+    this.token = String(env.PROXY_TOKEN);
+    this.host = String(ctx.req.header('host'));
+    this.prefix = String(env.URL_PREFIX);
+
+    return new Promise((resolve, reject) => {
+      let id = nanoid();
+      while (this.queue.some((x) => x.id === id)) {
+        id = nanoid();
+      }
+      this.queue.push({
+        id,
+        deviceToken,
+        headers,
+        aps,
+        resolve,
+        reject,
+      });
+      if (typeof this.timer !== 'undefined') {
+        return;
+      }
+      this.timer = setTimeout(this.execute.bind(this));
     });
-  });
+  },
 };
 
 export const onRequest = (ctx: EOEventContext) => {
@@ -88,7 +109,7 @@ export const onRequest = (ctx: EOEventContext) => {
       urlPrefix: ctx.env.URL_PREFIX || '/',
       basicAuth: ctx.env.BASIC_AUTH,
       apnsUrl: ctx.env.APNS_URL,
-      requestAPNs,
+      requestAPNs: APNsProxy.request.bind(APNsProxy),
     });
   }
   return hono.fetch(ctx.request, ctx.env);

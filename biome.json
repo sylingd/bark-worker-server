@@ -31,6 +31,9 @@
       "recommended": true,
       "security": {
         "noGlobalEval": "off"
+      },
+      "suspicious": {
+        "useIterableCallbackReturn": "off"
       }
     }
   }
