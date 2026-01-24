@@ -30,9 +30,14 @@ if (process.env.ENTRY === 'esa') {
 const otherEntry: RsbuildEntry = {};
 
 if (process.env.ENTRY === 'edgeone') {
-  defines['process.env.PROXY_TOKEN'] = JSON.stringify(
-    process.env.PROXY_TOKEN || nanoid(),
-  );
+  let proxyToken = process.env.PROXY_TOKEN;
+  if (!proxyToken) {
+    proxyToken = nanoid();
+    console.log(`Generate PROXY_TOKEN: ${proxyToken}`);
+  } else {
+    console.log(`Use PROXY_TOKEN: ${proxyToken}`);
+  }
+  defines['process.env.PROXY_TOKEN'] = JSON.stringify(proxyToken);
   otherEntry['node-proxy'] = {
     import: `./src/entry/edgeone-node-proxy.ts`,
     html: false,
