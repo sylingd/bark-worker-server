@@ -30,8 +30,8 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "hono": "^4.11.3",
-    "ky": "^1.14.2"
+    "got": "^14.6.6",
+    "hono": "^4.11.3"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged"

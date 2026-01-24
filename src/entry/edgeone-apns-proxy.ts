@@ -1,4 +1,4 @@
-import ky from 'ky';
+import got from 'got';
 import { APNS_HOST_NAME } from '../core/apns';
 import type { APNsProxyItem, APNsResponse, BasicEnv } from '../core/type';
 
@@ -21,13 +21,14 @@ const requestAPNs = async (
   headers: Record<string, string>,
   aps: any,
 ): Promise<APNsResponse> => {
-  const res = await ky.post(`https://${domain}/3/device/${deviceToken}`, {
+  const res = await got.post(`https://${domain}/3/device/${deviceToken}`, {
     headers: headers,
     json: aps,
+    http2: true,
   });
 
   let message: string;
-  const responseText = await res.text();
+  const responseText = res.body;
 
   try {
     message = JSON.parse(responseText).reason;
@@ -36,7 +37,7 @@ const requestAPNs = async (
   }
 
   return {
-    status: res.status,
+    status: res.statusCode,
     message,
   };
 };
