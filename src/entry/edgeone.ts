@@ -49,7 +49,7 @@ const APNsProxy: IAPNsProxy = {
     this.queue = [];
     try {
       const f = await fetch(
-        `https://${this.host}${this.prefix}-node/apns-proxy`,
+        `https://${this.host}/bark-node${this.prefix}/apns-proxy`,
         {
           method: 'POST',
           headers: {
@@ -74,7 +74,9 @@ const APNsProxy: IAPNsProxy = {
       throw new Error('ctx is not defined');
     }
     const env: BasicEnv = ctx.env;
-    this.token = String(env.PROXY_TOKEN);
+    if (env.PROXY_TOKEN) {
+      this.token = env.PROXY_TOKEN;
+    }
     this.host = String(ctx.req.header('host'));
     this.prefix = String(env.URL_PREFIX);
 

@@ -114,7 +114,8 @@ export default defineConfig({
             const nodeFunctions = path.join(
               cwd,
               'node-functions',
-              `${process.env.URL_PREFIX}-node`,
+              'bark-node',
+              process.env.URL_PREFIX,
             );
             await fs.ensureDir(functions);
             await fs.ensureDir(nodeFunctions);
