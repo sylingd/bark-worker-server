@@ -141,14 +141,22 @@ if (process.env.ENTRY === 'edgeone') {
             if (await fs.pathExists(target)) {
               await fs.remove(target);
             }
-            const nodeTarget = path.join(nodeFunctions, 'apns-proxy.js');
-            if (await fs.pathExists(nodeTarget)) {
-              await fs.remove(nodeTarget);
-            }
             console.log(`Move handler.js to ${target}`);
             await fs.move(path.join(dist, 'handler.js'), target);
+
+            const nodeTarget = path.join(nodeFunctions, 'apns-proxy.js');
             console.log(`Move apns-proxy.js to ${nodeTarget}`);
-            await fs.move(path.join(dist, 'apns-proxy.js'), nodeTarget);
+            const nodeTargetContent = await fs.readFile(
+              path.join(dist, 'apns-proxy.js'),
+              'utf-8',
+            );
+            await fs.writeFile(
+              nodeTarget,
+              nodeTargetContent.replace(
+                /export[\s]*{(.*?) as handleRequest[\s]*}/,
+                'export const onRequest=$1',
+              ),
+            );
           }
         });
       },

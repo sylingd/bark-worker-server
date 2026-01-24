@@ -22,7 +22,7 @@ const requestAPNs = async (
   aps: any,
 ): Promise<APNsResponse> => {
   const res = await got.post(`https://${domain}/3/device/${deviceToken}`, {
-    headers: headers,
+    headers,
     json: aps,
     http2: true,
   });
@@ -42,7 +42,7 @@ const requestAPNs = async (
   };
 };
 
-export const onRequest = async (ctx: EOEventContext) => {
+export const handleRequest = async (ctx: EOEventContext) => {
   const token = process.env.PROXY_TOKEN;
   if (!token) {
     return jsonResponse({
