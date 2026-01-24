@@ -58,7 +58,7 @@ const requestAPNs: NonNullable<Options['requestAPNs']> = (
       const cloneQueue = [...queue];
       queue = [];
       const f = await fetch(
-        `https://${ctx.req.header('host')}/${env.URL_PREFIX}-node/apns-proxy`,
+        `https://${ctx.req.header('host')}${env.URL_PREFIX}-node/apns-proxy`,
         {
           method: 'POST',
           headers: {
