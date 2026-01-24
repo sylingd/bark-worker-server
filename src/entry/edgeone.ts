@@ -54,6 +54,7 @@ const APNsProxy: IAPNsProxy = {
           method: 'POST',
           headers: {
             'x-token': this.token,
+            'content-type': 'application/json',
           },
           body: JSON.stringify(cloneQueue),
         },

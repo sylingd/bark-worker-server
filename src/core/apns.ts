@@ -128,7 +128,7 @@ export const push = async (
     } catch (e) {
       return {
         status: 500,
-        message: (e as Error).message,
+        message: `${(e as Error).message} ${(e as Error).stack}`,
       };
     }
   }

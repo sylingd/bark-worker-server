@@ -32,6 +32,8 @@ export const onRequest = async (ctx: EOEventContext) => {
 
   const body = await ctx.request.json();
 
+  console.log('payload', body);
+
   const queue = await Promise.all(
     body.map(async (item: APNsProxyItem) => {
       const res = await requestAPNs(
@@ -46,6 +48,8 @@ export const onRequest = async (ctx: EOEventContext) => {
       };
     }),
   );
+
+  console.log('result', queue);
 
   return jsonResponse({
     code: 200,
